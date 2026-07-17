@@ -1,0 +1,4 @@
+# Build-time only. Install with:  pip install -r requirements-dev.txt
+# (also installs the runtime deps in requirements.txt)
+-r requirements.txt
+pyinstaller>=6.10

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Add to Home Screen: durable icon that launches straight into the page -->
+<meta name="theme-color" content="#0B6E6E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QR Bridge">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B6E6E'/%3E%3Cpath d='M11 9H9v2M21 9h2v2M11 23H9v-2M21 23h2v-2' stroke='%23fff' stroke-width='2' fill='none'/%3E%3Crect x='14' y='14' width='4' height='4' rx='1' fill='%23fff'/%3E%3C/svg%3E">
+<meta name="robots" content="noindex, nofollow">
+<title>QR Bridge — your result</title>
+<style>
+  /* ============================================================
+     QR Bridge result page — phone side
+     Palette (chosen for calm, high contrast, not a template look):
+       paper   #F6F7F9   ink     #16191D   muted  #565D66
+       accent  #0B6E6E   ready   #1E7A46   wait   #8A5A00
+       line    #D6DBE1   danger  #7A2E2E (text only)
+     No web fonts on purpose: instant load off the local server,
+     nothing external to fail. Personality comes from weight + scale.
+     ============================================================ */
+  :root{
+    --paper:#F6F7F9; --ink:#16191D; --muted:#565D66;
+    --accent:#0B6E6E; --accent-ink:#ffffff;
+    --ready:#1E7A46; --wait:#8A5A00; --danger:#7A2E2E;
+    --line:#D6DBE1; --card:#FFFFFF;
+    --focus:#0B6E6E;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    font-size:19px; line-height:1.5;
+    padding:max(20px,env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+    display:flex; justify-content:center;
+  }
+  .wrap{width:100%; max-width:520px}
+  header{margin:6px 0 20px}
+  .kicker{
+    font-size:14px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin:0 0 4px;
+  }
+  h1{font-size:27px; line-height:1.2; margin:0; font-weight:800; letter-spacing:-.01em}
+
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:22px; margin:0 0 18px;
+  }
+
+  /* Status block — the signature element */
+  .status{display:flex; gap:14px; align-items:flex-start}
+  .dot{
+    flex:0 0 auto; width:16px; height:16px; border-radius:50%;
+    margin-top:7px; background:var(--wait);
+  }
+  .status.is-ready .dot{background:var(--ready)}
+  .status.is-error .dot,.status.is-expired .dot{background:var(--danger)}
+  .status-title{font-size:21px; font-weight:700; margin:0}
+  .status-note{margin:4px 0 0; color:var(--muted); font-size:16px}
+
+  /* Waiting pulse — quiet, and switched off for reduced-motion users */
+  .status.is-waiting .dot{animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){
+    .status.is-waiting .dot{animation:none}
+  }
+
+  .result-label{font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; font-weight:700}
+  .result-text{
+    font-size:18px; word-break:break-word; margin:0;
+    padding:14px; background:var(--paper); border:1px solid var(--line); border-radius:12px;
+  }
+  .result-kind{margin:10px 0 0; font-size:15px; color:var(--muted)}
+
+  /* Actions — big, speakable, one job each */
+  .actions{display:flex; flex-direction:column; gap:12px; margin-top:18px}
+  .btn{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    width:100%; min-height:64px; border-radius:14px;
+    font-size:20px; font-weight:700; font-family:inherit;
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    border:2px solid transparent; padding:12px 20px;
+  }
+  .btn-primary{background:var(--accent); color:var(--accent-ink)}
+  .btn-secondary{background:#fff; color:var(--ink); border-color:var(--line)}
+  .btn-quiet{background:transparent; color:var(--muted); min-height:52px; font-size:18px; border-color:transparent}
+  .btn:focus-visible{outline:4px solid var(--focus); outline-offset:3px}
+  .btn:active{transform:translateY(1px)}
+  @media (prefers-reduced-motion:reduce){.btn:active{transform:none}}
+
+  /* Code entry fallback (only shown if no code came in the link) */
+  label{display:block; font-weight:700; margin:0 0 6px; font-size:17px}
+  .hint{color:var(--muted); font-size:15px; margin:0 0 12px}
+  input{
+    width:100%; font-size:22px; font-family:inherit; padding:16px;
+    border:2px solid var(--line); border-radius:12px; letter-spacing:.15em;
+    text-transform:uppercase;
+  }
+  input:focus-visible{outline:4px solid var(--focus); outline-offset:2px; border-color:var(--accent)}
+  .field + .field{margin-top:16px}
+
+  .privacy{color:var(--muted); font-size:14px; margin:18px 2px 0; text-align:center}
+  .hidden{display:none !important}
+  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">QR Bridge</p>
+    <h1>Your QR result</h1>
+  </header>
+
+  <!-- Live status: announced to screen readers the moment it changes -->
+  <div class="card">
+    <div id="status" class="status is-waiting" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <div>
+        <p class="status-title" id="statusTitle">Waiting for your computer</p>
+        <p class="status-note" id="statusNote">Keep this page open. The result will appear here on its own.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code entry: only appears if the page opened without a code in the link -->
+  <div id="entry" class="card hidden">
+    <div class="field">
+      <label for="code">One-time code</label>
+      <p class="hint">The six characters shown on your computer.</p>
+      <input id="code" name="code" inputmode="text" autocomplete="off"
+             autocapitalize="characters" spellcheck="false" maxlength="6"
+             aria-describedby="codeHint">
+    </div>
+    <div class="field" id="hostField">
+      <label for="host">Computer address</label>
+      <p class="hint">Only needed if this page did not open from the link on your computer.</p>
+      <input id="host" name="host" inputmode="url" autocomplete="off" spellcheck="false"
+             placeholder="192.168.x.x:port">
+    </div>
+    <div class="actions">
+      <button type="button" id="connectBtn" class="btn btn-primary">Get my result</button>
+    </div>
+  </div>
+
+  <!-- Result: hidden until a decoded value arrives -->
+  <div id="result" class="card hidden">
+    <p class="result-label">Decoded from the QR code</p>
+    <p class="result-text" id="resultText" tabindex="-1"></p>
+    <p class="result-kind" id="resultKind"></p>
+    <div class="actions">
+      <button type="button" id="openBtn" class="btn btn-primary hidden">Open link</button>
+      <button type="button" id="copyBtn" class="btn btn-secondary">Copy</button>
+      <button type="button" id="cancelBtn" class="btn btn-quiet">Cancel</button>
+    </div>
+  </div>
+
+  <p class="privacy">Nothing is saved. No accounts. This result is not stored after you leave.</p>
+
+  <!-- Polite announcements for copy/cancel etc. -->
+  <div class="sr-only" role="status" aria-live="polite" id="announce"></div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — aligned to the real /api/handoff contract in
+   qr_bridge.py (this page is served by that same server at /r,
+   so requests are same-origin: no CORS, no address typing).
+   ============================================================ */
+const CONFIG = {
+  // Empty string = same origin. This page is served FROM the desktop
+  // server at /r, so fetch() below is same-origin. A ?host= param can
+  // still override at runtime for the manual-entry fallback.
+  DESKTOP_ORIGIN: "",
+  ENDPOINT_PATH: "/api/handoff",
+  POLL_INTERVAL_MS: 1500,      // retry spacing for transient network errors only
+  SESSION_TIMEOUT_MS: 5 * 60 * 1000, // matches the 5-min one-time-code expiry
+  REQUEST_METHOD: "POST",
+};
+
+/* --- The actual desktop contract ------------------------------
+   POST /api/handoff with JSON {"code": "ABC123"} returns:
+     200 {"ok": true,  "result": "<decoded text>"}
+     400 {"ok": false, "error": "wrong_expired_or_used", "message": ...}
+     400 {"ok": false, "error": "malformed_request",     "message": ...}
+   The code is one-shot: the desktop creates it only AFTER the QR
+   result already exists, and consumes it on the first successful
+   request. So there is no server-side "waiting" state — the first
+   answer is either ready or expired. The only thing worth retrying
+   is a network failure, which never consumes the code.
+   ------------------------------------------------------------ */
+function interpret(httpStatus, body){
+  const b = body || {};
+  if(b.ok === true && typeof b.result === 'string'){
+    return {state:'ready', value: b.result};
+  }
+  if(b.ok === false && b.error === 'wrong_expired_or_used'){
+    return {state:'expired'};
+  }
+  // Anything else — unreadable reply, unexpected status, or a
+  // malformed_request answer this page should never trigger.
+  // Treat as transient and let the retry loop have another go.
+  return {state:'error'};
+}
+/* ============================================================ */
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status'), statusTitle = $('statusTitle'), statusNote = $('statusNote');
+const entryEl = $('entry'), resultEl = $('result');
+const resultText = $('resultText'), resultKind = $('resultKind');
+const openBtn = $('openBtn'), copyBtn = $('copyBtn'), cancelBtn = $('cancelBtn');
+const announce = $('announce');
+
+let pollTimer = null, deadline = 0, currentValue = null;
+
+function say(msg){ announce.textContent = ''; setTimeout(()=>{ announce.textContent = msg; }, 30); }
+
+function setStatus(kind, title, note){
+  statusEl.className = 'status is-' + kind;
+  statusTitle.textContent = title;
+  statusNote.textContent = note;
+}
+
+function readParams(){
+  const p = new URLSearchParams(location.search);
+  return {
+    code: (p.get('code') || p.get('c') || '').trim().toUpperCase(),
+    host: (p.get('host') || p.get('h') || '').trim(),
+  };
+}
+
+function originFor(host){
+  if(host){
+    return /^https?:\/\//i.test(host) ? host : ('http://' + host);
+  }
+  return CONFIG.DESKTOP_ORIGIN; // same-origin when empty
+}
+
+function isHttpUrl(text){
+  try{ const u = new URL(text); return u.protocol === 'http:' || u.protocol === 'https:'; }
+  catch(e){ return false; }
+}
+
+function describeKind(text){
+  if(isHttpUrl(text)) return 'This looks like a web link.';
+  if(/^WIFI:/i.test(text)) return 'This looks like Wi-Fi details. Copy it, then use it in your Wi-Fi settings.';
+  if(/^(mailto:|MATMSG:)/i.test(text)) return 'This looks like an email address.';
+  if(/^(tel:|smsto:)/i.test(text)) return 'This looks like a phone number.';
+  if(/^BEGIN:VCARD/i.test(text)) return 'This looks like contact details.';
+  return 'Plain text. There is no link to open, but you can copy it.';
+}
+
+async function pollOnce(origin, code){
+  let res, body = null;
+  try{
+    res = await fetch(origin + CONFIG.ENDPOINT_PATH, {
+      method: CONFIG.REQUEST_METHOD,
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({ code }),
+      cache: 'no-store',
+    });
+    try{ body = await res.json(); }catch(_){ body = null; }
+  }catch(networkErr){
+    // The request never reached the desktop — different from an
+    // expired-code answer, which is a real reply from the server.
+    return {state:'unreachable'};
+  }
+  return interpret(res.status, body);
+}
+
+function startPolling(origin, code){
+  deadline = Date.now() + CONFIG.SESSION_TIMEOUT_MS;
+  setStatus('waiting', 'Waiting for your computer', 'Keep this page open. The result will appear here on its own.');
+
+  const tick = async () => {
+    if(Date.now() > deadline){
+      stopPolling();
+      setStatus('expired', 'This code has timed out', 'Send the QR code from your computer again to get a new code.');
+      say('The code timed out. Send it from your computer again.');
+      return;
+    }
+    const r = await pollOnce(origin, code);
+    if(r.state === 'ready'){ stopPolling(); showResult(r.value); return; }
+    if(r.state === 'expired'){
+      stopPolling();
+      setStatus('expired', 'This code is no longer valid', 'It may have been used already or expired. Send the QR code from your computer again.');
+      say('That code is no longer valid.');
+      return;
+    }
+    if(r.state === 'unreachable'){
+      stopPolling();
+      showUnreachable(code);
+      return;
+    }
+    // transient 'error' — keep going quietly until the deadline
+    pollTimer = setTimeout(tick, CONFIG.POLL_INTERVAL_MS);
+  };
+  tick();
+}
+
+function stopPolling(){ if(pollTimer){ clearTimeout(pollTimer); pollTimer = null; } }
+
+/* Home-screen shortcut saved, but the desktop address changed (or the
+   desktop app is not running): explain in plain language and reopen the
+   manual code + address fields as the recovery path. Reuses the existing
+   is-error status styling. */
+function showUnreachable(code){
+  setStatus('error', "Can't reach your computer",
+    'Its address may have changed. Open QR Bridge on the computer to see the current link.');
+  if(code){ $('code').value = code; }
+  $('hostField').classList.remove('hidden');
+  entryEl.classList.remove('hidden');
+  say("Can't reach your computer. Its address may have changed. Open QR Bridge on the computer to see the current link.");
+}
+
+function showResult(value){
+  currentValue = value;
+  setStatus('ready', 'Result ready', 'Your QR code was decoded on your computer and sent here.');
+  resultText.textContent = value;
+  resultKind.textContent = describeKind(value);
+
+  if(isHttpUrl(value)){
+    openBtn.classList.remove('hidden');
+    openBtn.textContent = 'Open link';
+  }else{
+    openBtn.classList.add('hidden');
+  }
+  entryEl.classList.add('hidden');
+  resultEl.classList.remove('hidden');
+  // Move focus to the result so screen reader / Voice Control users land on it
+  resultText.focus();
+  say('Result ready. ' + describeKind(value));
+}
+
+/* Actions */
+openBtn.addEventListener('click', () => {
+  // Open only on this explicit tap, and only for http/https
+  if(currentValue && isHttpUrl(currentValue)){
+    window.open(currentValue, '_blank', 'noopener');
+  }
+});
+
+copyBtn.addEventListener('click', async () => {
+  if(!currentValue) return;
+  try{
+    await navigator.clipboard.writeText(currentValue);
+    say('Copied.');
+    copyBtn.textContent = 'Copied';
+    setTimeout(()=>{ copyBtn.textContent = 'Copy'; }, 1600);
+  }catch(e){
+    // Fallback for browsers that block the async clipboard API
+    const t = document.createElement('textarea');
+    t.value = currentValue; t.setAttribute('readonly',''); t.style.position='absolute'; t.style.left='-9999px';
+    document.body.appendChild(t); t.select();
+    try{ document.execCommand('copy'); say('Copied.'); }catch(_){ say('Could not copy. Select the text to copy it.'); }
+    document.body.removeChild(t);
+  }
+});
+
+cancelBtn.addEventListener('click', () => {
+  currentValue = null;
+  resultText.textContent = '';
+  resultEl.classList.add('hidden');
+  setStatus('waiting', 'Cleared', 'Nothing was kept. Send the QR code from your computer again when you are ready.');
+  say('Cleared. Nothing was kept.');
+});
+
+/* Manual entry fallback */
+$('connectBtn').addEventListener('click', () => {
+  const code = $('code').value.trim().toUpperCase();
+  const host = $('host').value.trim();
+  if(!code){ $('code').focus(); say('Enter the one-time code first.'); return; }
+  entryEl.classList.add('hidden');
+  startPolling(originFor(host), code);
+});
+
+/* Boot: if the link carried a code, go straight to live waiting.
+   Otherwise show the accessible code-entry fields. */
+(function init(){
+  const {code, host} = readParams();
+  if(code){
+    startPolling(originFor(host), code);
+  }else{
+    setStatus('waiting', 'Enter your code', 'Type the one-time code from your computer to get your result.');
+    entryEl.classList.remove('hidden');
+    // Hide the address field when we are same-origin (served from the desktop)
+    if(CONFIG.DESKTOP_ORIGIN === ''){ $('hostField').classList.add('hidden'); }
+    $('code').focus();
+  }
+})();
+</script>
+</body>
+</html>
