@@ -177,3 +177,7 @@ If your phone cannot open the phone URL:
 - Check that the computer is not on a public or guest network that blocks device-to-device connections.
 - Check whether Windows Firewall, antivirus software, VPN software, or workplace network rules are blocking local connections.
 - Try again after closing and reopening QR Bridge, which will create a new temporary local server address.
+
+## Licence
+
+QR Bridge is released under the MIT Licence. See [LICENSE](LICENSE) for the full text.
