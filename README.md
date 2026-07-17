@@ -180,4 +180,4 @@ If your phone cannot open the phone URL:
 
 ## Licence
 
-QR Bridge is released under the MIT Licence. See [LICENSE](LICENSE) for the full text.
+QR Bridge is MIT-licensed with the Commons Clause restriction — you are free to use, modify, and share it, but commercial sale or resale is not permitted (see [LICENSE](LICENSE)).
