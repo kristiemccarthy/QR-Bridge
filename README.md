@@ -1,20 +1,132 @@
 # QR Bridge
 
-QR Bridge is a small Windows desktop prototype for decoding a QR code that is already on your computer screen.
+**Scan a QR code without lifting your phone.**
 
-It is designed for people who cannot easily lift, aim, or steady a phone camera.
+QR Bridge reads a QR code straight off your computer screen and sends the
+result to your phone. No camera, no aiming, no steadying your hand. You stay
+in control the whole way: you always see what the code says before anything
+opens.
 
-## What QR Bridge Does
+This was built for anyone who finds it hard to pick up a phone, aim a camera
+at a screen, and hold it steady while it scans. That includes people with
+limited arm or hand movement, people who use a wheelchair, people with
+tremor, and anyone who is simply tired of asking someone else to scan a code
+for them.
 
-- Lets you drag a rectangle around part of your screen.
-- Looks for a QR code inside that selected area.
-- Shows the decoded result in a preview window.
-- Lets you choose Copy, Open on this computer, Send to phone, Scan another QR code, or Cancel.
-- Can send one decoded QR result to a phone on the same Wi-Fi or local network using a temporary one-time code.
+## What it does
 
-QR Bridge does not upload screenshots or QR contents anywhere. It does not save QR history. It does not open links automatically.
+1. A QR code appears on your screen.
+2. You open QR Bridge and select the area with the code in it.
+3. QR Bridge reads the code and shows you what it says.
+4. You choose: send it to your phone, copy it, open it, or cancel.
 
-## Install
+That is the whole tool. Nothing is stored. There are no accounts. Nothing is
+sent anywhere except to your own phone.
+
+## Download
+
+**[Download QR Bridge for Windows](https://github.com/kristiemccarthy/QR-Bridge/releases/download/v0.1.0/QR.Bridge.exe)**
+
+1. Click the link above.
+2. Save the file.
+3. Double-click it to open QR Bridge. No installation, no setup.
+
+**The first time you open it**, Windows will show a blue screen that says
+"Windows protected your PC." This happens because the app isn't registered
+with Microsoft, not because anything is wrong. To open it anyway:
+- Click **More info**
+- Click **Run anyway**
+
+You only need to do this once.
+
+## Using it on your phone
+
+The first time, open the link QR Bridge gives you in your phone's browser.
+**Tap the link rather than typing it from scratch.** If you type the
+address by hand and leave out the `http://` part, some browsers (including
+Chrome) will search the web for it instead of opening it.
+
+Once the page opens, save it to your home screen so you don't need to do
+this again:
+
+- **iPhone (Safari):** tap the Share button, then "Add to Home Screen."
+- **Android (Chrome):** tap the three-dot menu, then "Add to Home screen."
+
+After that, just tap the QR Bridge icon on your home screen. You'll only
+need to enter the short one-time code from the desktop app each time you
+use it. There's nothing else to type.
+
+Each one-time code lasts 5 minutes. If it doesn't work, go back to the
+desktop app and choose "Send to phone" again to get a new one.
+
+## If QR Bridge can't read a code
+
+Sometimes a code won't read. QR Bridge tells you what happened in plain
+words:
+
+- **No QR code found** — there was no code in the area you selected. Try
+  again, and include the whole code plus a little of the white space around
+  it.
+- **QR code could not be read** — there was a code, but it wasn't clear
+  enough. This usually means it's blurry, very small, or low contrast.
+  Making it bigger on your screen before you select it often fixes this.
+- **Multiple QR codes found** — there was more than one code in the area
+  you selected. Select a smaller area with just one code in it.
+
+Plain black-and-white codes read the most reliably. Codes that are
+stylised, have a logo in the middle, or use unusual dot shapes are harder
+to read, and some won't read at all. That's a limit of the code itself, not
+a fault in QR Bridge.
+
+## If sending to your phone doesn't work
+
+This is usually a network issue, not a problem with QR Bridge itself.
+
+- Your computer and phone need to be on the same Wi-Fi network.
+- Windows may ask for firewall permission the first time you use "Send to
+  phone." Choose **Allow**.
+- If it still doesn't work, check that your Wi-Fi network allows devices to
+  see each other (some public and guest networks block this on purpose).
+- If a saved home-screen shortcut that used to work suddenly says it can't
+  reach your computer, your computer's network address may have changed.
+  Open QR Bridge on the computer and choose "Send to phone" again, then
+  save a fresh shortcut using the new link.
+
+## Keyboard shortcuts
+
+- **Enter** — confirm
+- **Esc** — cancel
+- **Ctrl+C** — copy the result
+
+## Before you scan certain QR codes
+
+Take extra care with QR codes used for logging in, government services, or
+proving your identity. QR Bridge shows you exactly what a code contains
+before anything opens, so always read that preview before choosing Open.
+
+## Your privacy
+
+- Nothing you scan is stored after you're done with it. (QR Bridge saves
+  one small settings file for your auto-start preference, nothing else.)
+- There is no account to make and nothing to sign in to.
+- QR Bridge does not track what you scan.
+- You always see the decoded result before anything opens.
+
+## Licence
+
+QR Bridge is free to use, change, and share, under MIT with the Commons
+Clause. That means anyone can use it or build on it, but nobody can sell it
+or turn it into a paid product without contacting the original author
+first.
+
+---
+
+## For developers
+
+If you want to run QR Bridge from source or contribute to it, see the
+sections below.
+
+### Install
 
 1. Install Python for Windows from [python.org](https://www.python.org/downloads/windows/).
 2. During installation, tick the box that says **Add python.exe to PATH**.
@@ -37,7 +149,7 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-## Run
+### Run
 
 In PowerShell, with the virtual environment turned on, run:
 
@@ -47,46 +159,7 @@ python qr_bridge.py
 
 The app window will open.
 
-## How To Use
-
-1. Put a QR code on your screen.
-2. In QR Bridge, choose **Select area of screen**.
-3. Drag a box around the QR code.
-4. Release the mouse button.
-5. Review the result in the preview window.
-6. Choose:
-   - **Copy** to copy the result.
-   - **Open on this computer** to open a web link. This button only works for `http://` and `https://` links.
-   - **Send to phone** to make a temporary local-network handoff.
-   - **Scan another QR code** to close the preview and return to the main app.
-   - **Cancel** to close the preview.
-
-QR Bridge will never open a link unless you choose **Open on this computer**.
-
-## Send To Phone
-
-Use this only when your phone and computer are on the same Wi-Fi or local network.
-
-1. Decode a QR code in QR Bridge.
-2. In the preview window, choose **Send to phone**.
-3. QR Bridge will show:
-   - a phone URL
-   - a one-time code
-   - a note that your phone must be on the same Wi-Fi or local network
-   - a note that the handoff expires after 5 minutes
-4. On your phone, open the phone URL in a browser.
-5. Enter the one-time code.
-6. If the code is correct and has not expired, your phone will show the decoded QR result.
-7. On your phone, choose:
-   - **Open** to open the link on your phone. This only appears as an active button for `http://` and `https://` links.
-   - **Copy** to copy the result.
-   - **Cancel** to stop.
-
-The phone page does not open links automatically. The phone must show Open, Copy, and Cancel before anything happens.
-
-Each one-time code can be used once. It expires after 5 minutes. After it is used or expired, QR Bridge removes it from memory.
-
-## Developer Note: Handoff API
+### Developer Note: Handoff API
 
 The local handoff server supports two ways to receive a QR result:
 
@@ -127,57 +200,3 @@ Example error response:
 ```
 
 This endpoint is still local-network only. QR handoff contents stay in memory only and are removed after successful use or expiry.
-
-## Keyboard Help
-
-- Press **Enter** on the main window to start selecting an area.
-- Press **Esc** during selection to cancel.
-- Press **Ctrl+C** in the preview window to copy the decoded result.
-- Press **Esc** in the preview window to close it.
-
-## Test The App
-
-You can test QR Bridge with any QR code image shown on your screen.
-
-A simple test is:
-
-1. Open a QR code image in your browser or image viewer.
-2. Run QR Bridge.
-3. Select the area around the QR code, including the white border around it if possible.
-4. Check that the preview window shows the expected text or link.
-5. Try selecting an empty part of the screen. You should see **No QR code found**.
-
-Plain black-and-white QR codes are easiest to test first.
-
-Stylised QR codes, QR codes with logos, blurry QR codes, or QR codes with unusual dot shapes may be harder to read.
-
-If the QR code is blurry, too small, partly cut off, or has very low contrast, you may see **QR code could not be read**.
-
-If you select an area that contains more than one readable QR code, you should see **Multiple QR codes found**.
-
-## Privacy Notes
-
-All work happens on your computer. The app captures only your screen locally, decodes locally, and forgets the result when you close the preview.
-
-The app does not have any account, server, database, analytics, cloud storage, or QR history.
-
-Avoid sharing screenshots or decoded links from real login, government, identity verification, authentication, or pairing QR codes. These can be private or security-sensitive.
-
-Phone handoff contents are stored in memory only. QR Bridge does not write decoded QR contents to disk.
-
-When you use **Send to phone**, QR Bridge starts a small temporary web server on your computer. It is meant for your local Wi-Fi or home/work network only. It does not create an internet-hosted page.
-
-## Windows Firewall And Network Notes
-
-Windows may ask whether Python is allowed to accept connections on your network. The phone handoff may not work unless you allow it for your private Wi-Fi or local network.
-
-If your phone cannot open the phone URL:
-
-- Check that the phone and computer are on the same Wi-Fi or local network.
-- Check that the computer is not on a public or guest network that blocks device-to-device connections.
-- Check whether Windows Firewall, antivirus software, VPN software, or workplace network rules are blocking local connections.
-- Try again after closing and reopening QR Bridge, which will create a new temporary local server address.
-
-## Licence
-
-QR Bridge is MIT-licensed with the Commons Clause restriction — you are free to use, modify, and share it, but commercial sale or resale is not permitted (see [LICENSE](LICENSE)).
